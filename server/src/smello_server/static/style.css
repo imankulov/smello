@@ -1,0 +1,104 @@
+/* Smello custom styles (on top of Pico CSS) */
+
+.clear-all-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: -0.5rem;
+    margin-bottom: 1rem;
+}
+
+.clear-all-btn {
+    width: auto;
+    padding: 0.3em 1em;
+    font-size: 0.85em;
+}
+
+.filters {
+    margin-bottom: 1rem;
+}
+
+.clickable-row {
+    cursor: pointer;
+}
+
+.clickable-row:hover {
+    background-color: var(--pico-secondary-hover-background);
+}
+
+.url-cell {
+    font-family: var(--pico-font-family-monospace);
+    font-size: 0.85em;
+    max-width: 400px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.15em 0.5em;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.85em;
+    font-family: var(--pico-font-family-monospace);
+}
+
+.status-2xx { background-color: #d4edda; color: #155724; }
+.status-3xx { background-color: #cce5ff; color: #004085; }
+.status-4xx { background-color: #fff3cd; color: #856404; }
+.status-5xx { background-color: #f8d7da; color: #721c24; }
+
+.headers-table {
+    font-size: 0.85em;
+}
+
+.headers-table td {
+    padding: 0.25rem 0.5rem;
+    word-break: break-all;
+}
+
+.json-viewer {
+    max-height: 500px;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 0.85em;
+    background: var(--pico-code-background-color);
+    padding: 1rem;
+    border-radius: var(--pico-border-radius);
+}
+
+.copy-btn {
+    font-size: 0.7em;
+    padding: 0.2em 0.5em;
+    margin-left: 0.5em;
+    display: inline;
+    width: auto;
+}
+
+h4 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* JSON viewer styles */
+.json-key { color: #881391; }
+.json-string { color: #1a1aa6; }
+.json-number { color: #1c6b48; }
+.json-boolean { color: #d32f2f; }
+.json-null { color: #808080; }
+.json-toggle {
+    cursor: pointer;
+    user-select: none;
+}
+.json-toggle::before {
+    content: "▼ ";
+    font-size: 0.7em;
+}
+.json-toggle.collapsed::before {
+    content: "▶ ";
+}
+.json-collapsible.hidden {
+    display: none;
+}

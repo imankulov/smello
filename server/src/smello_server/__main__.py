@@ -1,0 +1,50 @@
+"""CLI entry point: `smello-server run` or `python -m smello_server`."""
+
+import argparse
+import os
+
+import uvicorn
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        prog="smello-server", description="Smello HTTP request inspector"
+    )
+    subparsers = parser.add_subparsers(dest="command")
+
+    run_parser = subparsers.add_parser("run", help="Start the Smello server")
+    run_parser.add_argument(
+        "--host", default="0.0.0.0", help="Host to bind to (default: 0.0.0.0)"
+    )
+    run_parser.add_argument(
+        "--port", type=int, default=8080, help="Port to bind to (default: 8080)"
+    )
+    run_parser.add_argument(
+        "--db-path", default=None, help="Path to SQLite database file"
+    )
+
+    args = parser.parse_args()
+
+    if args.command is None:
+        args.command = "run"
+        args.host = "0.0.0.0"
+        args.port = 8080
+        args.db_path = None
+
+    if args.command == "run":
+        if args.db_path:
+            os.environ["SMELLO_DB_PATH"] = args.db_path
+
+        from smello_server.app import create_app
+
+        app = create_app()
+        uvicorn.run(
+            app,
+            host=args.host,
+            port=args.port,
+            log_level="info",
+        )
+
+
+if __name__ == "__main__":
+    main()
