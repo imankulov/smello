@@ -61,6 +61,13 @@ smello.init(
 )
 ```
 
+## Python Version Support
+
+| Package | Python |
+|---------|--------|
+| **smello** (client SDK) | >= 3.10 |
+| **smello-server** | >= 3.14 |
+
 ## Supported Libraries
 
 - **requests** - patches `Session.send()`
@@ -99,9 +106,11 @@ Your Python App ──→ Smello Server ──→ Web Dashboard
 ```
 smello/
 ├── server/              # smello-server (FastAPI + Tortoise ORM + SQLite)
+│   └── tests/           # Server unit tests
 ├── clients/python/      # smello client SDK
-├── examples/python/     # Example scripts
-└── tests/
+│   └── tests/           # Client unit tests
+├── tests/test_e2e/      # End-to-end tests (workspace-level)
+└── examples/python/     # Example scripts
 ```
 
 ## License

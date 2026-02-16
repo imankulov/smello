@@ -15,7 +15,34 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
+  client-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.14"]
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: |
+            **/pyproject.toml
+            **/uv.lock
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: uv sync --package smello --python ${{ matrix.python-version }} --locked
+
+      - name: Run client tests
+        run: uv run --python ${{ matrix.python-version }} pytest clients/python/tests/ -v
+
+  server-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -30,14 +57,38 @@ jobs:
             **/pyproject.toml
             **/uv.lock
 
-      - name: Set up Python 3.12
-        run: uv python install 3.12
+      - name: Set up Python 3.14
+        run: uv python install 3.14
 
       - name: Install dependencies
-        run: uv sync --all-packages --locked
+        run: uv sync --package smello-server --locked
 
       - name: Run type checking with ty
         run: uv run ty check server/src clients/python/src
 
-      - name: Run tests
-        run: uv run pytest
+      - name: Run server tests
+        run: uv run pytest server/tests/ -v
+
+  e2e-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: |
+            **/pyproject.toml
+            **/uv.lock
+
+      - name: Set up Python 3.14
+        run: uv python install 3.14
+
+      - name: Install dependencies
+        run: uv sync --all-packages --locked
+
+      - name: Run e2e tests
+        run: uv run pytest tests/test_e2e/ -v

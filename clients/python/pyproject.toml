@@ -3,7 +3,7 @@ name = "smello"
 version = "0.1.0"
 description = "Capture outgoing HTTP requests and inspect them in a local web dashboard"
 license = "MIT"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 dependencies = []
 
 [build-system]
