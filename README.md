@@ -16,7 +16,7 @@ smello-server run
 Or with Docker:
 
 ```bash
-docker run -p 8080:8080 ghcr.io/roman/smello
+docker run -p 8080:8080 ghcr.io/imankulov/smello
 ```
 
 ### 2. Add to your code
@@ -78,7 +78,7 @@ smello.init(
 This project uses [uv](https://docs.astral.sh/uv/) for dependency management.
 
 ```bash
-git clone https://github.com/roman/smello.git
+git clone https://github.com/imankulov/smello.git
 cd smello
 
 # Install all workspace packages in development mode
