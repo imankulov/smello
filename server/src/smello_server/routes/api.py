@@ -1,9 +1,10 @@
 """API routes: ingestion endpoint and JSON API."""
 
 import uuid
+from datetime import datetime
 from urllib.parse import urlparse
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
 from smello_server.models import CapturedRequest
@@ -11,17 +12,20 @@ from smello_server.models import CapturedRequest
 router = APIRouter(prefix="/api")
 
 
+# --- Input models ---
+
+
 class RequestData(BaseModel):
     method: str
     url: str
-    headers: dict
+    headers: dict[str, str]
     body: str | None = None
     body_size: int = 0
 
 
 class ResponseData(BaseModel):
     status_code: int
-    headers: dict
+    headers: dict[str, str]
     body: str | None = None
     body_size: int = 0
 
@@ -41,8 +45,38 @@ class CapturePayload(BaseModel):
     meta: MetaData = MetaData()
 
 
-@router.post("/capture", status_code=201)
-async def capture(payload: CapturePayload):
+# --- Output models ---
+
+
+class CaptureResponse(BaseModel):
+    status: str
+
+
+class RequestSummary(BaseModel):
+    id: str
+    timestamp: datetime
+    method: str
+    url: str
+    host: str
+    status_code: int
+    duration_ms: int
+
+
+class RequestDetail(RequestSummary):
+    library: str
+    request_headers: dict[str, str]
+    request_body: str | None
+    request_body_size: int
+    response_headers: dict[str, str]
+    response_body: str | None
+    response_body_size: int
+
+
+# --- Routes ---
+
+
+@router.post("/capture", status_code=201, response_model=CaptureResponse)
+async def capture(payload: CapturePayload) -> CaptureResponse:
     host = urlparse(payload.request.url).hostname or "unknown"
 
     await CapturedRequest.create(
@@ -60,17 +94,17 @@ async def capture(payload: CapturePayload):
         host=host,
         library=payload.meta.library,
     )
-    return {"status": "ok"}
+    return CaptureResponse(status="ok")
 
 
-@router.get("/requests")
+@router.get("/requests", response_model=list[RequestSummary])
 async def list_requests(
     host: str | None = Query(None),
     method: str | None = Query(None),
     status: int | None = Query(None),
     search: str | None = Query(None),
     limit: int = Query(50, le=200),
-):
+) -> list[RequestSummary]:
     qs = CapturedRequest.all()
     if host:
         qs = qs.filter(host=host)
@@ -83,19 +117,44 @@ async def list_requests(
 
     requests = await qs.limit(limit)
     return [
-        {
-            "id": str(r.id),
-            "timestamp": r.timestamp.isoformat(),
-            "method": r.method,
-            "url": r.url,
-            "host": r.host,
-            "status_code": r.status_code,
-            "duration_ms": r.duration_ms,
-        }
+        RequestSummary(
+            id=str(r.id),
+            timestamp=r.timestamp,
+            method=r.method,
+            url=r.url,
+            host=r.host,
+            status_code=r.status_code,
+            duration_ms=r.duration_ms,
+        )
         for r in requests
     ]
 
 
+@router.get("/requests/{request_id}", response_model=RequestDetail)
+async def get_request(request_id: str) -> RequestDetail:
+    try:
+        r = await CapturedRequest.get(id=request_id)
+    except Exception:
+        raise HTTPException(status_code=404, detail="Request not found")
+
+    return RequestDetail(
+        id=str(r.id),
+        timestamp=r.timestamp,
+        method=r.method,
+        url=r.url,
+        host=r.host,
+        status_code=r.status_code,
+        duration_ms=r.duration_ms,
+        library=r.library,
+        request_headers=r.request_headers,
+        request_body=r.request_body,
+        request_body_size=r.request_body_size,
+        response_headers=r.response_headers,
+        response_body=r.response_body,
+        response_body_size=r.response_body_size,
+    )
+
+
 @router.delete("/requests", status_code=204)
-async def clear_requests():
+async def clear_requests() -> None:
     await CapturedRequest.all().delete()

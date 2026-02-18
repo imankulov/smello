@@ -5,7 +5,7 @@ from fastapi.responses import HTMLResponse
 
 from smello_server.models import CapturedRequest
 
-router = APIRouter()
+router = APIRouter(include_in_schema=False)
 
 
 @router.get("/", response_class=HTMLResponse)

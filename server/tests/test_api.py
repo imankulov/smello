@@ -94,6 +94,25 @@ def test_limit(client, make_payload):
     assert len(data) == 2
 
 
+def test_get_request_detail(client, sample_payload):
+    client.post("/api/capture", json=sample_payload)
+    resp = client.get(f"/api/requests/{sample_payload['id']}")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["id"] == sample_payload["id"]
+    assert data["method"] == "GET"
+    assert data["url"] == "https://api.example.com/v1/test"
+    assert data["request_headers"] == {"Content-Type": "application/json"}
+    assert data["response_body"] == '{"result": "success"}'
+    assert data["response_body_size"] == 21
+    assert data["library"] == "requests"
+
+
+def test_get_request_not_found(client):
+    resp = client.get("/api/requests/550e8400-e29b-41d4-a716-446655440000")
+    assert resp.status_code == 404
+
+
 def test_clear_all(client, sample_payload):
     client.post("/api/capture", json=sample_payload)
     assert len(client.get("/api/requests").json()) == 1
