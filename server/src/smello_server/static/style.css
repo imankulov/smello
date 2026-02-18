@@ -71,13 +71,17 @@ h4 { font-size: 1rem; }
 }
 
 .list-item:hover {
-    background-color: var(--pico-secondary-hover-background);
+    background-color: #e9ecef;
 }
 
 .list-item.selected {
-    background-color: var(--pico-primary-background);
+    background-color: #d0e4f7;
     border-left: 3px solid var(--pico-primary);
     padding-left: calc(0.6rem - 3px);
+}
+
+.list-item.selected:hover {
+    background-color: #bdd8f0;
 }
 
 .list-item-top {
