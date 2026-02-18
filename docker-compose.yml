@@ -2,7 +2,7 @@ services:
   server:
     build: .
     ports:
-      - "8080:8080"
+      - "5110:5110"
     volumes:
       - smello-data:/data
 

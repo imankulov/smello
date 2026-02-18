@@ -46,4 +46,4 @@ print(f"GET  /delay/1      → {resp.status_code}  (check duration in dashboard)
 
 # Give the background thread time to flush
 time.sleep(2)
-print("\nDone. Open http://localhost:8080 to browse captured requests.")
+print("\nDone. Open http://localhost:5110 to browse captured requests.")

@@ -8,7 +8,7 @@ _config: SmelloConfig | None = None
 
 
 def init(
-    server_url: str = "http://localhost:8080",
+    server_url: str = "http://localhost:5110",
     capture_hosts: list[str] | None = None,
     capture_all: bool = True,
     ignore_hosts: list[str] | None = None,

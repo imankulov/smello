@@ -9,7 +9,7 @@ COPY pyproject.toml uv.lock* ./
 
 RUN uv sync --package smello-server --no-dev --frozen
 
-EXPOSE 8080
+EXPOSE 5110
 
 ENV SMELLO_DB_PATH=/data/smello.db
 

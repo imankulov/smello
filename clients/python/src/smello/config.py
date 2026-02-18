@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 
 @dataclass
 class SmelloConfig:
-    server_url: str = "http://localhost:8080"
+    server_url: str = "http://localhost:5110"
     capture_hosts: list[str] = field(default_factory=list)
     capture_all: bool = True
     ignore_hosts: list[str] = field(default_factory=list)

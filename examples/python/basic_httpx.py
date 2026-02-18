@@ -14,7 +14,7 @@ with httpx.Client() as client:
     resp = client.post("https://httpbin.org/post", json={"hello": "httpx"})
     print(f"POST /post: {resp.status_code}")
 
-print("\nOpen http://localhost:8080 to see captured requests")
+print("\nOpen http://localhost:5110 to see captured requests")
 
 # Give the background thread time to flush
 import time

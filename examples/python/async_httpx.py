@@ -17,7 +17,7 @@ async def main():
         resp = await client.post("https://httpbin.org/post", json={"async": True})
         print(f"POST /post: {resp.status_code}")
 
-    print("\nOpen http://localhost:8080 to see captured requests")
+    print("\nOpen http://localhost:5110 to see captured requests")
 
     # Give the background thread time to flush
     await asyncio.sleep(1)

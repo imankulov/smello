@@ -17,7 +17,7 @@ def main():
         "--host", default="0.0.0.0", help="Host to bind to (default: 0.0.0.0)"
     )
     run_parser.add_argument(
-        "--port", type=int, default=8080, help="Port to bind to (default: 8080)"
+        "--port", type=int, default=5110, help="Port to bind to (default: 5110)"
     )
     run_parser.add_argument(
         "--db-path", default=None, help="Path to SQLite database file"
@@ -28,7 +28,7 @@ def main():
     if args.command is None:
         args.command = "run"
         args.host = "0.0.0.0"
-        args.port = 8080
+        args.port = 5110
         args.db_path = None
 
     if args.command == "run":
