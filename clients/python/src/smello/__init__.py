@@ -2,7 +2,7 @@
 
 from smello.config import SmelloConfig
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 _config: SmelloConfig | None = None
 
