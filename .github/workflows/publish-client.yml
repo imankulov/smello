@@ -1,0 +1,34 @@
+name: Publish smello to PyPI
+
+on:
+  push:
+    tags:
+      - "smello/v*"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: pypi
+    permissions:
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: |
+            **/pyproject.toml
+            **/uv.lock
+
+      - name: Set up Python
+        run: uv python install 3.14
+
+      - name: Build
+        run: uv build --package smello
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
