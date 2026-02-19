@@ -28,6 +28,10 @@ uv run ty check server/src clients/python/src
 # Linting (runs automatically via pre-commit hooks)
 uv run ruff check .
 uv run ruff format .
+
+# Bump versions (patch, minor, or major)
+just bump-client patch   # smello client SDK
+just bump-server minor   # smello-server
 ```
 
 ## Architecture

@@ -1,0 +1,16 @@
+[tool.bumpversion]
+current_version = "0.1.0"
+commit = true
+tag = true
+tag_name = "smello/v{new_version}"
+tag_message = "Release smello v{new_version}"
+message = "Bump smello version: {current_version} → {new_version}"
+
+[[tool.bumpversion.files]]
+filename = "clients/python/pyproject.toml"
+key_path = "project.version"
+
+[[tool.bumpversion.files]]
+filename = "clients/python/src/smello/__init__.py"
+search = '__version__ = "{current_version}"'
+replace = '__version__ = "{new_version}"'
