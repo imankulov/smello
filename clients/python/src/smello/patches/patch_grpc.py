@@ -80,21 +80,10 @@ def _extract_host(target: str) -> str:
 
 
 def _metadata_to_dict(metadata) -> dict:
-    """Convert gRPC metadata (list of tuples) to a dict.
-
-    Binary metadata values (keys ending with ``-bin``) are base64-encoded
-    so the dict is always JSON-serializable.
-    """
+    """Convert gRPC metadata (list of tuples) to a dict."""
     if metadata is None:
         return {}
-    result = {}
-    for k, v in metadata:
-        if isinstance(v, bytes):
-            import base64
-
-            v = base64.b64encode(v).decode("ascii")
-        result[k] = v
-    return result
+    return {k: v for k, v in metadata}
 
 
 def _proto_to_json(message) -> str:

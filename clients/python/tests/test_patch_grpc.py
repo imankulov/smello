@@ -504,16 +504,12 @@ def test_metadata_to_dict_tuples():
     assert _metadata_to_dict(metadata) == {"key1": "val1", "key2": "val2"}
 
 
-def test_metadata_to_dict_binary_values():
-    """Binary metadata values (bytes) should be base64-encoded."""
+def test_metadata_to_dict_preserves_bytes():
+    """Binary metadata values should pass through (transport handles serialization)."""
     metadata = [
         ("x-trace-id", "abc123"),
         ("pc-low-bwd-bin", b"\n\x02 \x10"),
     ]
     result = _metadata_to_dict(metadata)
     assert result["x-trace-id"] == "abc123"
-    assert isinstance(result["pc-low-bwd-bin"], str)
-    # Verify it's valid base64
-    import base64
-
-    assert base64.b64decode(result["pc-low-bwd-bin"]) == b"\n\x02 \x10"
+    assert result["pc-low-bwd-bin"] == b"\n\x02 \x10"

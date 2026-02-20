@@ -75,9 +75,17 @@ def _worker() -> None:
         _queue.task_done()
 
 
+def _json_default(obj: object) -> str:
+    """Fallback serializer for types that json.dumps cannot handle (e.g. bytes)."""
+    try:
+        return repr(obj)
+    except Exception:
+        return "<unserializable>"
+
+
 def _send_to_server(payload: dict) -> None:
     """Send a payload to the Smello server using urllib (to avoid recursion)."""
-    data = json.dumps(payload).encode("utf-8")
+    data = json.dumps(payload, default=_json_default).encode("utf-8")
     req = urllib.request.Request(
         f"{_server_url}/api/capture",
         data=data,
