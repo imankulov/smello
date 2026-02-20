@@ -1,5 +1,5 @@
 [tool.bumpversion]
-current_version = "0.1.1"
+current_version = "0.1.2"
 commit = true
 tag = true
 tag_name = "smello-server/v{new_version}"
