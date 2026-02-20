@@ -1,9 +1,12 @@
 """Monkey-patch for the `httpx` library (sync and async)."""
 
+import logging
 import time
 from urllib.parse import urlparse
 
 from smello.config import SmelloConfig
+
+logger = logging.getLogger(__name__)
 
 
 def patch_httpx(config: SmelloConfig) -> None:
@@ -47,8 +50,8 @@ def _patch_sync(httpx, config: SmelloConfig) -> None:
                 library="httpx",
             )
             send(payload)
-        except Exception:
-            pass
+        except Exception as err:
+            logger.debug("Failed to capture request: %s", err)
 
         return response
 
@@ -85,8 +88,8 @@ def _patch_async(httpx, config: SmelloConfig) -> None:
                 library="httpx",
             )
             send(payload)
-        except Exception:
-            pass
+        except Exception as err:
+            logger.debug("Failed to capture request: %s", err)
 
         return response
 

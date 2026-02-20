@@ -1,5 +1,6 @@
 """Serialize captured HTTP request/response pairs for sending to the server."""
 
+import sys
 import time
 import uuid
 
@@ -68,6 +69,4 @@ def _body_to_str(body: str | bytes | None) -> str | None:
 
 
 def _python_version() -> str:
-    import sys
-
     return f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"

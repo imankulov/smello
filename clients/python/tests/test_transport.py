@@ -6,7 +6,7 @@ import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import pytest
-from smello.transport import send, start_worker
+from smello.transport import flush, send, shutdown, start_worker
 
 
 class _CaptureHandler(BaseHTTPRequestHandler):
@@ -53,3 +53,36 @@ def test_send_delivers_payload(capture_server):
 
     assert len(captured) == 1
     assert captured[0]["id"] == "test-transport-1"
+
+
+def test_flush_waits_for_pending_payloads(capture_server):
+    url, captured = capture_server
+    start_worker(url)
+
+    for i in range(5):
+        send({"id": f"flush-{i}", "request": {}, "response": {}})
+
+    result = flush(timeout=5.0)
+
+    assert result is True
+    assert len(captured) == 5
+
+
+def test_flush_returns_true_when_queue_already_empty(capture_server):
+    url, _captured = capture_server
+    start_worker(url)
+
+    result = flush(timeout=1.0)
+    assert result is True
+
+
+def test_shutdown_flushes(capture_server):
+    url, captured = capture_server
+    start_worker(url)
+
+    send({"id": "shutdown-1", "request": {}, "response": {}})
+
+    result = shutdown(timeout=5.0)
+
+    assert result is True
+    assert len(captured) == 1

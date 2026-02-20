@@ -1,18 +1,26 @@
 """Background transport: sends captured data to the Smello server without blocking."""
 
 import json
+import logging
 import queue
 import threading
 import urllib.request
 
+logger = logging.getLogger(__name__)
+
 _queue: queue.Queue = queue.Queue(maxsize=1000)
 _server_url: str = ""
+_started: bool = False
 
 
 def start_worker(server_url: str) -> None:
     """Start the background worker thread."""
-    global _server_url
+    global _server_url, _started
     _server_url = server_url
+
+    if _started:
+        return
+    _started = True
 
     thread = threading.Thread(target=_worker, daemon=True, name="smello-transport")
     thread.start()
@@ -23,7 +31,37 @@ def send(payload: dict) -> None:
     try:
         _queue.put_nowait(payload)
     except queue.Full:
-        pass  # drop silently if queue is full
+        logger.warning("Payload dropped: capture queue is full")
+
+
+def flush(timeout: float = 2.0) -> bool:
+    """Block until all queued payloads are sent, or *timeout* seconds elapse.
+
+    Returns ``True`` if the queue drained in time, ``False`` otherwise.
+    """
+    # Queue.join() has no timeout parameter. Access the underlying
+    # condition variable directly — same technique Sentry's SDK uses.
+    with _queue.all_tasks_done:
+        if _queue.unfinished_tasks:
+            logger.debug("Flushing %d pending capture(s)…", _queue.unfinished_tasks)
+            _queue.all_tasks_done.wait(timeout=timeout)
+
+    drained = _queue.unfinished_tasks == 0
+    if not drained:
+        logger.warning(
+            "Flush timed out with %d capture(s) still pending",
+            _queue.unfinished_tasks,
+        )
+    return drained
+
+
+def shutdown(timeout: float = 2.0) -> bool:
+    """Flush pending payloads then stop accepting new ones.
+
+    Returns ``True`` if the queue drained in time, ``False`` otherwise.
+    """
+    result = flush(timeout=timeout)
+    return result
 
 
 def _worker() -> None:
@@ -32,8 +70,8 @@ def _worker() -> None:
         payload = _queue.get()
         try:
             _send_to_server(payload)
-        except Exception:
-            pass  # silently drop if server is down
+        except Exception as err:
+            logger.warning("Failed to send capture to %s: %s", _server_url, err)
         _queue.task_done()
 
 

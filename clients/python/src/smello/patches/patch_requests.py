@@ -1,9 +1,12 @@
 """Monkey-patch for the `requests` library."""
 
+import logging
 import time
 from urllib.parse import urlparse
 
 from smello.config import SmelloConfig
+
+logger = logging.getLogger(__name__)
 
 
 def patch_requests(config: SmelloConfig) -> None:
@@ -42,8 +45,8 @@ def patch_requests(config: SmelloConfig) -> None:
                 library="requests",
             )
             send(payload)
-        except Exception:
-            pass  # never break user's code
+        except Exception as err:
+            logger.debug("Failed to capture request: %s", err)
 
         return response
 

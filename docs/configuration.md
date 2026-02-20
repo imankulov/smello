@@ -39,6 +39,46 @@ Header names whose values are replaced with `[REDACTED]`. Default: `["Authorizat
 
 Master switch. Set to `False` to disable all capturing. Default: `True`.
 
+## Flushing and shutdown
+
+Smello sends captures in a background thread so it never blocks your application. This means your process may exit before all captures reach the server — especially in short-lived scripts or CLI tools.
+
+`smello.init()` registers an `atexit` hook that automatically flushes pending captures (with a 2-second timeout) when the program exits. For most applications, this is all you need.
+
+For explicit control:
+
+```python
+# Block until all pending captures are sent (up to 5 seconds)
+smello.flush(timeout=5.0)  # returns True if drained, False if timed out
+
+# Flush and stop the transport
+smello.shutdown(timeout=2.0)
+```
+
+In test suites or scripts where you need to verify captures arrived, call `smello.flush()` before your assertions.
+
+## Logging
+
+Smello uses Python's standard `logging` module. By default it is silent — a `NullHandler` is attached to the `smello` logger so no output is produced unless you opt in.
+
+To see warnings (dropped payloads, server connectivity issues):
+
+```python
+import logging
+logging.basicConfig()
+logging.getLogger("smello").setLevel(logging.WARNING)
+```
+
+To see all debug output (every capture attempt):
+
+```python
+import logging
+logging.basicConfig()
+logging.getLogger("smello").setLevel(logging.DEBUG)
+```
+
+You can also route Smello logs to a file or integrate them with your application's existing logging configuration — just configure the `"smello"` logger however you like.
+
 ## Server CLI options
 
 ```bash
