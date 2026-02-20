@@ -10,13 +10,13 @@ curl -s http://localhost:5110/api/requests | python -m json.tool
 
 ### Query parameters
 
-| Parameter | Example | Description |
-|-----------|---------|-------------|
-| `method` | `POST` | Filter by HTTP method |
-| `host` | `api.stripe.com` | Filter by hostname |
-| `status` | `500` | Filter by response status code |
-| `search` | `checkout` | Search by URL substring |
-| `limit` | `10` | Max results (default: 50, max: 200) |
+| Parameter | Example          | Description                         |
+| --------- | ---------------- | ----------------------------------- |
+| `method`  | `POST`           | Filter by HTTP method               |
+| `host`    | `api.stripe.com` | Filter by hostname                  |
+| `status`  | `500`            | Filter by response status code      |
+| `search`  | `checkout`       | Search by URL substring             |
+| `limit`   | `10`             | Max results (default: 50, max: 200) |
 
 Combine filters:
 

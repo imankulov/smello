@@ -57,14 +57,14 @@ Smello redacts sensitive headers (`Authorization`, `X-Api-Key`) by default.
 
 ## Supported libraries
 
-| Library | What Smello patches |
-|---------|---------------------|
-| **requests** | `Session.send()` |
-| **httpx** | `Client.send()` and `AsyncClient.send()` |
+| Library      | What Smello patches                      |
+| ------------ | ---------------------------------------- |
+| **requests** | `Session.send()`                         |
+| **httpx**    | `Client.send()` and `AsyncClient.send()` |
 
 ## Python version support
 
-| Package | Python |
-|---------|--------|
+| Package                 | Python  |
+| ----------------------- | ------- |
 | **smello** (client SDK) | >= 3.10 |
-| **smello-server** | >= 3.14 |
+| **smello-server**       | >= 3.14 |
