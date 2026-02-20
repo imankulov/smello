@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-02-20
+
 ### Added
 
 - gRPC interception support for unary-unary calls via `grpc.insecure_channel()` and `grpc.secure_channel()`.

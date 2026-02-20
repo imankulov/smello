@@ -13,7 +13,7 @@ from smello.transport import start_worker as _start_worker
 logging.getLogger("smello").addHandler(logging.NullHandler())
 
 __all__ = ["init", "flush", "shutdown"]
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 _DEFAULT_SERVER_URL = "http://localhost:5110"
 _DEFAULT_REDACT_HEADERS = ["authorization", "x-api-key"]
