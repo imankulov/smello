@@ -159,6 +159,29 @@
     </div>
   </section>
 
+  <section class="features-section" style="padding-top: 0;">
+    <h2>AI Agent Skills</h2>
+    <div class="features" style="grid-template-columns: repeat(2, 1fr); max-width: 720px;">
+      <div class="feature">
+        <h3>/setup-smello</h3>
+        <p>Your AI agent explores your codebase and proposes a step-by-step plan to integrate Smello — package install, entrypoint placement, Docker Compose, and env var config.</p>
+      </div>
+      <div class="feature">
+        <h3>/http-debugger</h3>
+        <p>Debug captured HTTP traffic with your AI agent. Inspect requests, find failed API calls, and analyze response bodies — all from your editor.</p>
+      </div>
+    </div>
+    <p style="text-align: center; margin-top: 2rem; font-size: 1.05rem; opacity: 0.85;">
+      Works with Claude Code, Cursor, GitHub Copilot, and
+      <a href="https://skills.sh/" style="color: var(--md-typeset-a-color);">20+ AI coding tools</a>.
+    </p>
+    <div style="text-align: center; margin-top: 1rem;">
+      <div class="install-bar">
+        <span class="prompt">$</span> npx skills add smelloscope/smello
+      </div>
+    </div>
+  </section>
+
   <section class="code-section">
     <h2>How It Works</h2>
     <p class="subtitle">Add two lines, then open <code style="color: inherit; opacity: 0.85;">localhost:5110</code> to browse captured traffic.</p>

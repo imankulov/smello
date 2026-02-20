@@ -13,31 +13,73 @@ smello.init(
 )
 ```
 
+Every parameter falls back to a **`SMELLO_*` environment variable** when not passed explicitly, then to a hardcoded default. This follows the same pattern as Sentry (`SENTRY_DSN`), LangSmith (`LANGSMITH_API_KEY`), and Datadog (`DD_TRACE_ENABLED`).
+
 ## Parameters
+
+| Parameter | Env variable | Default |
+|-----------|-------------|---------|
+| `enabled` | `SMELLO_ENABLED` | `True` |
+| `server_url` | `SMELLO_URL` | `http://localhost:5110` |
+| `capture_all` | `SMELLO_CAPTURE_ALL` | `True` |
+| `capture_hosts` | `SMELLO_CAPTURE_HOSTS` | `[]` |
+| `ignore_hosts` | `SMELLO_IGNORE_HOSTS` | `[]` |
+| `redact_headers` | `SMELLO_REDACT_HEADERS` | `["Authorization", "X-Api-Key"]` |
+
+**Precedence**: explicit parameter > environment variable > hardcoded default.
+
+### `enabled`
+
+Master switch. Set to `False` to disable all capturing. Default: `True`.
+
+Set via env var: `SMELLO_ENABLED=false` (accepts `true`/`1`/`yes` and `false`/`0`/`no`, case-insensitive).
 
 ### `server_url`
 
 URL of the Smello server. Default: `http://localhost:5110`.
 
+Set via env var: `SMELLO_URL=http://smello:5110`.
+
 ### `capture_hosts`
 
 List of hostnames to capture. When set, Smello only captures requests to these hosts and ignores everything else.
+
+Set via env var: `SMELLO_CAPTURE_HOSTS=api.stripe.com,api.openai.com` (comma-separated).
 
 ### `capture_all`
 
 Capture requests to all hosts. Default: `True`. Set to `False` when using `capture_hosts`.
 
+Set via env var: `SMELLO_CAPTURE_ALL=false`.
+
 ### `ignore_hosts`
 
 List of hostnames to skip. Smello always ignores the server's own hostname to prevent recursion.
+
+Set via env var: `SMELLO_IGNORE_HOSTS=localhost,internal.svc` (comma-separated).
 
 ### `redact_headers`
 
 Header names whose values are replaced with `[REDACTED]`. Default: `["Authorization", "X-Api-Key"]`.
 
-### `enabled`
+Set via env var: `SMELLO_REDACT_HEADERS=Authorization,X-Api-Key,X-Custom-Token` (comma-separated). Setting this replaces the defaults entirely.
 
-Master switch. Set to `False` to disable all capturing. Default: `True`.
+## Environment-only configuration
+
+For projects where you want zero code changes, add `smello.init()` without arguments and control everything via environment variables:
+
+```python
+import smello
+smello.init()
+```
+
+```bash
+export SMELLO_ENABLED=true
+export SMELLO_URL=http://smello:5110
+export SMELLO_IGNORE_HOSTS=localhost,internal.svc
+```
+
+This is useful for Docker Compose setups, CI environments, or `.env` files.
 
 ## Flushing and shutdown
 

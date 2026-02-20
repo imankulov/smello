@@ -1,0 +1,167 @@
+---
+name: setup-smello
+description: Explore a Python codebase and propose a plan to integrate Smello HTTP traffic capture. Use when the user wants to add Smello to their project, set up HTTP request monitoring, or capture outgoing API calls for debugging.
+argument-hint: "[server_url]"
+disable-model-invocation: true
+allowed-tools: Read, Grep, Glob, Bash(pip *), Bash(uv *), Bash(cat *), Bash(ls *), Bash(python *), Bash(docker *)
+---
+
+# Setup Smello
+
+You are helping the user integrate [Smello](https://github.com/smelloscope/smello) into their Python project. Smello captures outgoing HTTP requests (via `requests` and `httpx`) and displays them in a local web dashboard at http://localhost:5110.
+
+**Your job is to explore the codebase, then present a plan. Do NOT make any changes until the user approves.**
+
+## Step 1: Explore the codebase
+
+Investigate the project to understand:
+
+1. **Package manager**: Is the project using `pip` + `requirements.txt`, `pip` + `pyproject.toml`, `uv`, `poetry`, `pipenv`, or something else?
+2. **HTTP libraries**: Does the project use `requests`, `httpx`, both, or neither? Search for `import requests`, `import httpx`, `from requests`, `from httpx`.
+3. **Application entrypoint**: Find where the app starts. Look for:
+   - `if __name__ == "__main__":` blocks
+   - Framework-specific entrypoints: Django (`manage.py`, `wsgi.py`, `asgi.py`), Flask (`app = Flask(...)`, `create_app()`), FastAPI (`app = FastAPI()`), etc.
+   - CLI entrypoints in `pyproject.toml` (`[project.scripts]`)
+4. **Docker setup**: Check for `docker-compose.yml`, `docker-compose.dev.yml`, `compose.yml`, `compose.dev.yml`, `Dockerfile`, or similar files. Identify development-specific compose files vs production ones.
+5. **Environment-based config**: Check if the project uses environment variables, `.env` files, or settings modules to toggle dev-only features (this informs where to gate `smello.init()`).
+
+## Step 2: Present the plan
+
+After exploring, present a clear plan with these sections:
+
+### A. Install the packages
+
+Based on the package manager detected:
+
+- **pip + requirements.txt**: `pip install smello` (add `smello` to `requirements-dev.txt` or `requirements.txt`)
+- **pip + pyproject.toml**: Add `smello` to `[project.optional-dependencies]` dev group, or `[dependency-groups]` dev group
+- **uv**: `uv add --dev smello`
+- **poetry**: `poetry add --group dev smello`
+- **pipenv**: `pipenv install --dev smello`
+
+The server can be installed separately (`pip install smello-server` / `uv tool install smello-server`) or run via Docker.
+
+### B. Add `smello.init()` to the entrypoint
+
+Propose the exact file and location. The two lines must go **before** any HTTP library imports or usage:
+
+```python
+import smello
+smello.init()
+```
+
+Common placement patterns:
+
+- **Django**: In `manage.py` (for `runserver`) or a custom `AppConfig.ready()` method
+- **Flask**: At the top of `create_app()` or the app factory
+- **FastAPI**: At module level in the main app file, or in a `lifespan` handler
+- **CLI / script**: Near the top of `if __name__ == "__main__":`
+- **General**: Wherever the application bootstraps, before HTTP calls are made
+
+Since Smello reads `SMELLO_ENABLED` from the environment, the recommended pattern is to always call `smello.init()` and control activation via the environment:
+
+```python
+import smello
+smello.init()  # only activates when SMELLO_ENABLED=true
+```
+
+Then in `.env` or the shell:
+
+```bash
+SMELLO_ENABLED=true
+```
+
+This way the code has zero conditional logic. For projects that prefer explicit gating in code:
+
+```python
+import os
+if os.getenv("SMELLO_ENABLED", "").lower() in ("1", "true", "yes"):
+    import smello
+    smello.init()
+```
+
+Or if the project already has a settings/config pattern, use that.
+
+### C. Configure via environment variables
+
+Smello supports full configuration via `SMELLO_*` environment variables. Suggest adding these to the project's `.env`, `.env.development`, or equivalent:
+
+```bash
+SMELLO_ENABLED=true                              # enable/disable (default: true)
+SMELLO_URL=http://localhost:5110                  # server URL
+# SMELLO_CAPTURE_HOSTS=api.stripe.com,api.openai.com  # only capture these hosts
+# SMELLO_IGNORE_HOSTS=localhost,internal.svc      # skip these hosts
+# SMELLO_REDACT_HEADERS=Authorization,X-Api-Key   # headers to redact
+```
+
+All parameters can also be passed explicitly to `smello.init()`, which takes precedence over env vars:
+
+- If the app talks to specific APIs, suggest `SMELLO_CAPTURE_HOSTS=api.example.com` or `capture_hosts=["api.example.com"]`
+- If there are internal services to skip, suggest `SMELLO_IGNORE_HOSTS=...` or `ignore_hosts=[...]`
+- If a non-default server URL is needed (e.g., Docker networking), suggest `SMELLO_URL=http://smello:5110` or `server_url="http://smello:5110"`
+- Always mention that `Authorization` and `X-Api-Key` headers are redacted by default
+
+Boolean env vars accept `true`/`1`/`yes` and `false`/`0`/`no` (case-insensitive). List env vars are comma-separated.
+
+### D. Docker Compose (optional)
+
+If the project uses Docker Compose for development, propose adding a Smello service:
+
+```yaml
+smello:
+  image: ghcr.io/smelloscope/smello
+  ports:
+    - "5110:5110"
+  volumes:
+    - smello-data:/data
+```
+
+And add `smello-data` to the `volumes:` section. The app container should set `SMELLO_URL=http://smello:5110` (or pass `server_url="http://smello:5110"` to `init()`) to reach the Smello server over the Docker network.
+
+Prefer adding this to a dev-specific compose file (`docker-compose.dev.yml`, `compose.dev.yml`, `compose.override.yml`) if one exists. If only a single compose file exists, note that the user may want to create a dev overlay.
+
+### E. Running the server (non-Docker)
+
+If the project doesn't use Docker, mention how to start the server:
+
+```bash
+smello-server run
+```
+
+Or install it as a standalone tool:
+
+```bash
+# With uv
+uv tool install smello-server
+
+# With pipx
+pipx install smello-server
+```
+
+Then run: `smello-server run`
+
+## Step 3: Wait for approval
+
+After presenting the plan, ask the user which parts they want to proceed with. Do NOT edit any files until explicitly told to do so.
+
+## Reference
+
+- Smello client SDK: `pip install smello` (Python >= 3.10, zero dependencies)
+- Smello server: `pip install smello-server` (Python >= 3.14) or Docker `ghcr.io/smelloscope/smello`
+- Dashboard: http://localhost:5110
+- Supported libraries: `requests` (patches `Session.send()`) and `httpx` (patches `Client.send()` and `AsyncClient.send()`)
+- Default redacted headers: `Authorization`, `X-Api-Key`
+- Default server URL: `http://localhost:5110`
+
+### Environment variables
+
+| Variable | Type | Default |
+|----------|------|---------|
+| `SMELLO_ENABLED` | bool | `true` |
+| `SMELLO_URL` | string | `http://localhost:5110` |
+| `SMELLO_CAPTURE_ALL` | bool | `true` |
+| `SMELLO_CAPTURE_HOSTS` | comma-separated list | `[]` |
+| `SMELLO_IGNORE_HOSTS` | comma-separated list | `[]` |
+| `SMELLO_REDACT_HEADERS` | comma-separated list | `Authorization,X-Api-Key` |
+
+Precedence: explicit `init()` parameter > env var > hardcoded default.

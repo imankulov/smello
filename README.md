@@ -39,6 +39,19 @@ resp = httpx.get("https://api.openai.com/v1/models")
 
 Two lines, no configuration.
 
+## AI Agent Skills
+
+Smello ships with [Agent Skills](https://agentskills.io) for Claude Code, Cursor, GitHub Copilot, and [20+ other AI coding tools](https://skills.sh/).
+
+```bash
+npx skills add smelloscope/smello
+```
+
+| Skill | Install individually | Description |
+|-------|---------------------|-------------|
+| `/setup-smello` | `npx skills add smelloscope/smello --skill setup-smello` | Explores your codebase and proposes a plan to integrate Smello (package install, entrypoint placement, Docker Compose, env vars). Does not make changes without approval. |
+| `/http-debugger` | `npx skills add smelloscope/smello --skill http-debugger` | Queries the Smello API to inspect captured HTTP traffic, debug failed API calls, and analyze request/response details. Also activates automatically when you ask about HTTP debugging. |
+
 ## What Smello Captures
 
 For every outgoing HTTP request:
@@ -62,6 +75,19 @@ smello.init(
     enabled=True,                              # kill switch
 )
 ```
+
+All parameters fall back to `SMELLO_*` environment variables when not passed explicitly:
+
+| Parameter | Env variable | Default |
+|-----------|-------------|---------|
+| `enabled` | `SMELLO_ENABLED` | `True` |
+| `server_url` | `SMELLO_URL` | `http://localhost:5110` |
+| `capture_all` | `SMELLO_CAPTURE_ALL` | `True` |
+| `capture_hosts` | `SMELLO_CAPTURE_HOSTS` | `[]` |
+| `ignore_hosts` | `SMELLO_IGNORE_HOSTS` | `[]` |
+| `redact_headers` | `SMELLO_REDACT_HEADERS` | `["Authorization", "X-Api-Key"]` |
+
+Boolean env vars accept `true`/`1`/`yes` and `false`/`0`/`no` (case-insensitive). List env vars are comma-separated.
 
 ## API
 
