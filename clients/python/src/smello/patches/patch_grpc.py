@@ -3,7 +3,9 @@
 import logging
 import time
 
+from smello.capture import serialize_request_response
 from smello.config import SmelloConfig
+from smello.transport import send
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +33,7 @@ _GRPC_STATUS_TO_HTTP = {
 def patch_grpc(config: SmelloConfig) -> None:
     """Patch grpc.insecure_channel and grpc.secure_channel to capture unary-unary calls."""
     try:
-        import grpc  # type: ignore[unresolved-import]
+        import grpc  # type: ignore[unresolved-import]  # noqa: PLC0415 -- optional dependency
     except ImportError:
         return  # grpc not installed, skip
 
@@ -94,7 +96,7 @@ def _proto_to_json(message) -> str:
     underlying protobuf via a ``_pb`` attribute.
     """
     try:
-        from google.protobuf.json_format import (  # type: ignore[unresolved-import]
+        from google.protobuf.json_format import (  # type: ignore[unresolved-import]  # noqa: PLC0415 -- optional dependency
             MessageToJson,
         )
 
@@ -225,10 +227,7 @@ def _send_capture(
     response_body: str,
     duration_s: float,
 ) -> None:
-    from smello import capture as _capture
-    from smello import transport as _transport
-
-    payload = _capture.serialize_request_response(
+    payload = serialize_request_response(
         config=config,
         method=method,
         url=url,
@@ -240,4 +239,4 @@ def _send_capture(
         duration_s=duration_s,
         library="grpc",
     )
-    _transport.send(payload)
+    send(payload)

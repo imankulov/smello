@@ -13,8 +13,16 @@ import time
 import urllib.request
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
+import httpx
 import pytest
+import requests as requests_lib
 import tortoise.context
+import uvicorn
+from smello.config import SmelloConfig
+from smello.patches.patch_httpx import patch_httpx
+from smello.patches.patch_requests import patch_requests
+from smello.transport import start_worker
+from smello_server.app import create_app
 
 # -- Mock target API server ---------------------------------------------------
 
@@ -65,14 +73,10 @@ def mock_target():
 @pytest.fixture()
 def smello_server(tmp_path):
     """A real Smello server running on a random port with a fresh DB."""
-    import uvicorn
-
     tortoise.context._global_context = None
 
     port = _free_port()
     db_url = f"sqlite://{tmp_path / 'e2e_test.db'}"
-
-    from smello_server.app import create_app
 
     app = create_app(db_url=db_url)
 
@@ -99,13 +103,7 @@ def smello_server(tmp_path):
 @pytest.fixture()
 def patched_requests(smello_server):
     """Patch the requests library via smello SDK, return the reloaded module."""
-    import requests as requests_lib
-
     importlib.reload(requests_lib)
-
-    from smello.config import SmelloConfig
-    from smello.patches.patch_requests import patch_requests
-    from smello.transport import start_worker
 
     start_worker(smello_server)
     config = SmelloConfig(server_url=smello_server, redact_headers=["authorization"])
@@ -116,13 +114,7 @@ def patched_requests(smello_server):
 @pytest.fixture()
 def patched_httpx(smello_server):
     """Patch httpx (sync + async) via smello SDK, return the reloaded module."""
-    import httpx
-
     importlib.reload(httpx)
-
-    from smello.config import SmelloConfig
-    from smello.patches.patch_httpx import patch_httpx
-    from smello.transport import start_worker
 
     start_worker(smello_server)
     config = SmelloConfig(server_url=smello_server, redact_headers=["authorization"])

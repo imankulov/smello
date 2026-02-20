@@ -4,7 +4,9 @@ import logging
 import time
 from urllib.parse import urlparse
 
+from smello.capture import serialize_request_response
 from smello.config import SmelloConfig
+from smello.transport import send
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +14,7 @@ logger = logging.getLogger(__name__)
 def patch_requests(config: SmelloConfig) -> None:
     """Patch requests.Session.send to capture outgoing HTTP traffic."""
     try:
-        import requests
+        import requests  # noqa: PLC0415 -- optional dependency
     except ImportError:
         return  # requests not installed, skip
 
@@ -29,9 +31,6 @@ def patch_requests(config: SmelloConfig) -> None:
         duration = time.monotonic() - start
 
         try:
-            from smello.capture import serialize_request_response
-            from smello.transport import send
-
             payload = serialize_request_response(
                 config=config,
                 method=prepared_request.method or "GET",

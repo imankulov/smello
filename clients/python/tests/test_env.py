@@ -4,6 +4,7 @@ import os
 from unittest.mock import patch
 
 import pytest
+import smello
 from smello._env import _env_bool, _env_list, _env_str
 
 # --- _env_str ---
@@ -99,7 +100,6 @@ class TestInitEnvVars:
 
     def test_enabled_false_via_env(self):
         """SMELLO_ENABLED=false should prevent patching."""
-        import smello
 
         with patch.dict(os.environ, {"SMELLO_ENABLED": "false"}):
             smello._config = None
@@ -108,12 +108,11 @@ class TestInitEnvVars:
 
     def test_enabled_true_via_env(self):
         """SMELLO_ENABLED=true should allow init to proceed."""
-        import smello
 
         with (
             patch.dict(os.environ, {"SMELLO_ENABLED": "true"}),
-            patch("smello.transport.start_worker"),
-            patch("smello.patches.apply_all"),
+            patch("smello._start_worker"),
+            patch("smello._apply_all"),
         ):
             smello._config = None
             smello.init()
@@ -121,7 +120,6 @@ class TestInitEnvVars:
 
     def test_explicit_enabled_overrides_env(self):
         """Explicit enabled=False should win over SMELLO_ENABLED=true."""
-        import smello
 
         with patch.dict(os.environ, {"SMELLO_ENABLED": "true"}):
             smello._config = None
@@ -130,12 +128,11 @@ class TestInitEnvVars:
 
     def test_server_url_from_env(self):
         """SMELLO_URL should set the server URL."""
-        import smello
 
         with (
             patch.dict(os.environ, {"SMELLO_URL": "http://smello:9999"}),
-            patch("smello.transport.start_worker"),
-            patch("smello.patches.apply_all"),
+            patch("smello._start_worker"),
+            patch("smello._apply_all"),
         ):
             smello._config = None
             smello.init()
@@ -143,36 +140,31 @@ class TestInitEnvVars:
 
     def test_explicit_server_url_overrides_env(self):
         """Explicit server_url should win over SMELLO_URL."""
-        import smello
 
         with (
             patch.dict(os.environ, {"SMELLO_URL": "http://from-env:1111"}),
-            patch("smello.transport.start_worker"),
-            patch("smello.patches.apply_all"),
+            patch("smello._start_worker"),
+            patch("smello._apply_all"),
         ):
             smello._config = None
             smello.init(server_url="http://explicit:2222")
             assert smello._config.server_url == "http://explicit:2222"
 
     def test_capture_hosts_from_env(self):
-        import smello
-
         with (
             patch.dict(os.environ, {"SMELLO_CAPTURE_HOSTS": "a.com,b.com"}),
-            patch("smello.transport.start_worker"),
-            patch("smello.patches.apply_all"),
+            patch("smello._start_worker"),
+            patch("smello._apply_all"),
         ):
             smello._config = None
             smello.init()
             assert smello._config.capture_hosts == ["a.com", "b.com"]
 
     def test_ignore_hosts_from_env(self):
-        import smello
-
         with (
             patch.dict(os.environ, {"SMELLO_IGNORE_HOSTS": "internal.svc,localhost"}),
-            patch("smello.transport.start_worker"),
-            patch("smello.patches.apply_all"),
+            patch("smello._start_worker"),
+            patch("smello._apply_all"),
         ):
             smello._config = None
             smello.init()
@@ -180,36 +172,30 @@ class TestInitEnvVars:
             assert "localhost" in smello._config.ignore_hosts
 
     def test_redact_headers_from_env(self):
-        import smello
-
         with (
             patch.dict(os.environ, {"SMELLO_REDACT_HEADERS": "X-Secret,X-Token"}),
-            patch("smello.transport.start_worker"),
-            patch("smello.patches.apply_all"),
+            patch("smello._start_worker"),
+            patch("smello._apply_all"),
         ):
             smello._config = None
             smello.init()
             assert smello._config.redact_headers == ["x-secret", "x-token"]
 
     def test_redact_headers_default_without_env(self):
-        import smello
-
         with (
             patch.dict(os.environ, {}, clear=True),
-            patch("smello.transport.start_worker"),
-            patch("smello.patches.apply_all"),
+            patch("smello._start_worker"),
+            patch("smello._apply_all"),
         ):
             smello._config = None
             smello.init()
             assert smello._config.redact_headers == ["authorization", "x-api-key"]
 
     def test_capture_all_false_from_env(self):
-        import smello
-
         with (
             patch.dict(os.environ, {"SMELLO_CAPTURE_ALL": "false"}),
-            patch("smello.transport.start_worker"),
-            patch("smello.patches.apply_all"),
+            patch("smello._start_worker"),
+            patch("smello._apply_all"),
         ):
             smello._config = None
             smello.init()
@@ -217,12 +203,11 @@ class TestInitEnvVars:
 
     def test_defaults_without_env(self):
         """With no env vars and no explicit params, hardcoded defaults apply."""
-        import smello
 
         with (
             patch.dict(os.environ, {}, clear=True),
-            patch("smello.transport.start_worker"),
-            patch("smello.patches.apply_all"),
+            patch("smello._start_worker"),
+            patch("smello._apply_all"),
         ):
             smello._config = None
             smello.init()

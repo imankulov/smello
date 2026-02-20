@@ -1,9 +1,15 @@
 """Web UI routes: request list and detail pages."""
 
+from pathlib import Path
+
 from fastapi import APIRouter, Query, Request
 from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 
 from smello_server.models import CapturedRequest
+
+_TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates"
+templates = Jinja2Templates(directory=str(_TEMPLATES_DIR))
 
 router = APIRouter(include_in_schema=False)
 
@@ -17,8 +23,6 @@ async def request_list(
     search: str | None = Query(None),
     _partial: str | None = Query(None),
 ):
-    from smello_server.app import templates
-
     qs = CapturedRequest.all()
     if host:
         qs = qs.filter(host=host)
@@ -54,8 +58,6 @@ async def request_list(
 
 @router.get("/requests/{request_id}", response_class=HTMLResponse)
 async def request_detail(request: Request, request_id: str):
-    from smello_server.app import templates
-
     captured = await CapturedRequest.get(id=request_id)
 
     return templates.TemplateResponse(
@@ -69,8 +71,6 @@ async def request_detail(request: Request, request_id: str):
 
 @router.get("/requests/{request_id}/partial", response_class=HTMLResponse)
 async def request_detail_partial(request: Request, request_id: str):
-    from smello_server.app import templates
-
     captured = await CapturedRequest.get(id=request_id)
 
     return templates.TemplateResponse(

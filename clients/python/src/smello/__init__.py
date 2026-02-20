@@ -2,12 +2,17 @@
 
 import atexit
 import logging
+from urllib.parse import urlparse
 
 from smello._env import _env_bool, _env_list, _env_str
 from smello.config import SmelloConfig
+from smello.patches import apply_all as _apply_all
+from smello.transport import flush, shutdown
+from smello.transport import start_worker as _start_worker
 
 logging.getLogger("smello").addHandler(logging.NullHandler())
 
+__all__ = ["init", "flush", "shutdown"]
 __version__ = "0.2.0"
 
 _DEFAULT_SERVER_URL = "http://localhost:5110"
@@ -80,44 +85,17 @@ def init(
     )
 
     # Always ignore the smello server itself
-    from urllib.parse import urlparse
-
     server_host = urlparse(_config.server_url).hostname
     if server_host and server_host not in _config.ignore_hosts:
         _config.ignore_hosts.append(server_host)
 
     # Start transport worker
-    from smello.transport import start_worker
-
-    start_worker(_config.server_url)
+    _start_worker(_config.server_url)
 
     # Apply patches
-    from smello.patches import apply_all
-
-    apply_all(_config)
+    _apply_all(_config)
 
     # Register atexit hook once so pending captures are flushed on exit
     if not _atexit_registered:
         atexit.register(shutdown)
         _atexit_registered = True
-
-
-def flush(timeout: float = 2.0) -> bool:
-    """Block until all pending captures are sent, or *timeout* seconds elapse.
-
-    Returns ``True`` if the queue drained in time, ``False`` otherwise.
-    """
-    from smello.transport import flush as _flush
-
-    return _flush(timeout=timeout)
-
-
-def shutdown(timeout: float = 2.0) -> bool:
-    """Flush pending captures then stop the transport.
-
-    Called automatically via ``atexit`` when ``smello.init()`` has been used.
-    Returns ``True`` if the queue drained in time, ``False`` otherwise.
-    """
-    from smello.transport import shutdown as _shutdown
-
-    return _shutdown(timeout=timeout)

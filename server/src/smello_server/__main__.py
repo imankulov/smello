@@ -5,6 +5,8 @@ import os
 
 import uvicorn
 
+from smello_server.app import create_app
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -34,8 +36,6 @@ def main():
     if args.command == "run":
         if args.db_path:
             os.environ["SMELLO_DB_PATH"] = args.db_path
-
-        from smello_server.app import create_app
 
         app = create_app()
         uvicorn.run(

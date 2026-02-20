@@ -4,7 +4,9 @@ import logging
 import time
 from urllib.parse import urlparse
 
+from smello.capture import serialize_request_response
 from smello.config import SmelloConfig
+from smello.transport import send
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +14,7 @@ logger = logging.getLogger(__name__)
 def patch_httpx(config: SmelloConfig) -> None:
     """Patch httpx.Client.send and httpx.AsyncClient.send."""
     try:
-        import httpx
+        import httpx  # noqa: PLC0415 -- optional dependency
     except ImportError:
         return  # httpx not installed, skip
 
@@ -34,9 +36,6 @@ def _patch_sync(httpx, config: SmelloConfig) -> None:
         duration = time.monotonic() - start
 
         try:
-            from smello.capture import serialize_request_response
-            from smello.transport import send
-
             payload = serialize_request_response(
                 config=config,
                 method=request.method,
@@ -72,9 +71,6 @@ def _patch_async(httpx, config: SmelloConfig) -> None:
         duration = time.monotonic() - start
 
         try:
-            from smello.capture import serialize_request_response
-            from smello.transport import send
-
             payload = serialize_request_response(
                 config=config,
                 method=request.method,

@@ -5,17 +5,13 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 from tortoise.contrib.fastapi import register_tortoise
 
 from smello_server.routes.api import router as api_router
 from smello_server.routes.web import router as web_router
 
 PACKAGE_DIR = Path(__file__).parent
-TEMPLATES_DIR = PACKAGE_DIR / "templates"
 STATIC_DIR = PACKAGE_DIR / "static"
-
-templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 
 def _get_db_url() -> str:

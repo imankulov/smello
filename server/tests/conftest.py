@@ -3,6 +3,7 @@
 import pytest
 import tortoise.context
 from fastapi.testclient import TestClient
+from smello_server.app import create_app
 
 
 def _reset_tortoise_global_context():
@@ -16,8 +17,6 @@ def client(tmp_path):
     _reset_tortoise_global_context()
 
     db_url = f"sqlite://{tmp_path / 'test.db'}"
-
-    from smello_server.app import create_app
 
     app = create_app(db_url=db_url)
 
